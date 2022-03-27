@@ -1,7 +1,8 @@
-
 import time
+from tqdm import tqdm
 import requests
 from pprint import pprint
+import json
 
 class Session(object):
     API_URL = 'https://api.vk.com/method/'
@@ -17,7 +18,7 @@ class Session(object):
                 res = s['url']
         return res
 
-    def photos_get(self, owner_id:str):
+    def photos_get(self, owner_id:str, count=5):
       method = 'photos.get'
       url = self.API_URL + method
       params = {
@@ -25,6 +26,7 @@ class Session(object):
           'album_id': 'profile',
           'access_token': self.access_token,
           'extended': 1,
+          'count': str(count),
           'v': '5.131'
       }
       res = requests.get(url, params=params)
@@ -90,46 +92,48 @@ class YaUploader:
         else:
             return "Пустой URL"
 
-
 if __name__ == '__main__':
     global_path = "netology"
-    token_vk = ''
-    token_yandex = ''
+
+    with open('D:/token.json') as f:
+        token_json = json.load(f)
+        token_vk = token_json['token_vk']
+        token_ya = token_json['token_ya']
 
     owner_id = str(input("Введите id пользователя="))
-    if token_yandex == "":
-        token_yandex = str(input("Введите токен yandex="))
+    if token_ya == "":
+        token_ya = str(input("Введите токен yandex="))
     if token_vk == "":
         token_vk = str(input("Введите токен vk="))
 
-    yandex = YaUploader(token_yandex)
+    ya = YaUploader(token_ya)
     vk = Session(token_vk)
-    photos = vk.photos_get(owner_id)
+    photos = vk.photos_get(owner_id, 10)
+
+
     if photos.get('error') != None:
         pprint(photos['error']['error_msg'])
     elif photos.get('response') != None:
         items = photos['response']['items']
         owner_dir = global_path + "/" + owner_id
-        yandex.create_dir(owner_dir)  # Создадим папку
-        info = yandex.get_meta(owner_dir, only_name=1)
-        # print(info)
-        for item in items:
+        ya.create_dir(owner_dir)  # Создадим папку
+        info = ya.get_meta(owner_dir, only_name=1)
+        for item in tqdm(items):
             file_name = str(item['likes']['count']) + '.jpg'
-            if file_name in info:
-                print("Файл уже существует")
-            else:
+            if not file_name in info:
                 path_to_file = owner_dir + "/" + file_name
                 href_file = vk.get_max_url(item) #Получим ссылку с max размером
-                href = yandex.get_href_for_upload(path_to_file, href=href_file) #Получим ссылку для загрузки файла
-                result = yandex.upload(href=href) #Выполним загрузку
-                print(result, path_to_file, href_file)
+                href = ya.get_href_for_upload(path_to_file, href=href_file) #Получим ссылку для загрузки файла
+                result = ya.upload(href=href) #Выполним загрузку
+                # print(result, path_to_file, href_file)
         time.sleep(1) #Подождем загрузку последнего файла
-        info = yandex.get_meta(owner_dir)
-        print(info)
+        info = ya.get_meta(owner_dir)
+        pprint(info)
 
         #Создать файл
         with open(owner_id + '.json', mode='w') as new_file:
             new_file.writelines(str(info))
+
 
 
 
