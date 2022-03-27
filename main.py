@@ -1,9 +1,4 @@
-# from chardet.universaldetector import UniversalDetector
-# import os
-# from pathlib import Path
-# import operator
-# import time
-# from unittest import result
+
 import time
 import requests
 from pprint import pprint
@@ -12,8 +7,6 @@ class Session(object):
     API_URL = 'https://api.vk.com/method/'
     def __init__(self, access_token=None):
         self.access_token = access_token
-        # self.requests_session.headers['Accept'] = 'application/json'
-        # self.requests_session.headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
     def get_max_url(self, item):
         max_height = -1
@@ -34,10 +27,7 @@ class Session(object):
           'extended': 1,
           'v': '5.131'
       }
-      # print(params)
       res = requests.get(url, params=params)
-      # print(res)
-      # print(res.json())
       return res.json()
 
 class YaUploader:
