@@ -1,8 +1,9 @@
 import time
-from tqdm import tqdm
 import requests
-from pprint import pprint
 import json
+from tqdm import tqdm
+from pprint import pprint
+
 
 class Session(object):
     API_URL = 'https://api.vk.com/method/'
